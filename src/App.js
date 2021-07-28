@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import * as Data from "./crimeData";
 import axios from "axios";
+import Police from "./Police";
+
 import {
   withScriptjs,
   withGoogleMap,
@@ -165,6 +167,7 @@ function App() {
         containerElement={<div style={{ height: `400px` }} />}
         mapElement={<div style={{ height: `100%` }} />}
       />
+      <Police />
     </div>
   );
 }
