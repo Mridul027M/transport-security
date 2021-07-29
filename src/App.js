@@ -18,7 +18,7 @@ function App() {
   }
   const [viewport, setViewport] = useState({
       width: '100vw',
-      height: '100vh',
+      height: '50vh',
       latitude: 28.7041,
       longitude: 77.1025,
       zoom: 8
@@ -142,6 +142,7 @@ function App() {
          })
       }
         </ReactMapGL>
+      <Police/>
         </div>
     )
 }
