@@ -120,7 +120,7 @@ const MyMapComponent = withScriptjs(withGoogleMap((props) =>
     defaultCenter={{ lat: getLoc.lat, lng: getLoc.long }}
      
   > 
-
+ll
 
   
   {props.isMarkerShown && <Marker title='loc' label='Current Position' icon={iconImage} position={{ lat: getLoc.lat, lng: getLoc.long }} />} 
