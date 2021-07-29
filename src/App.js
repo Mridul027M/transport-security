@@ -1,14 +1,10 @@
 import React,{useState,useEffect} from 'react'
 import * as Data from './crimeData'
-import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
-
-
+import ReactMapGL,{Marker} from 'react-map-gl';
+//import {RoomIcon } from '@material-ui/icons/Room';
 
 function App() {
-    var iconImage0="https://developers.google.com/maps/documentation/javascript/examples/full/images/info-i_maps.png";
-    //var iconImage=`<a title="in location map icon navigation symbol ma - google maps marker blue PNG image with transparent background@toppng.com" href="https://toppng.com/free-image/in-location-map-icon-navigation-symbol-ma-google-maps-marker-blue-PNG-free-PNG-Images_174249" target="_blank">in location map icon navigation symbol ma - google maps marker blue PNG image with transparent background@toppng.com</a>`
-    var iconImage='http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-    const [getLoc,setLoc]= useState({long:' ',lat:" "});
+    const [getLoc,setLoc]= useState({long:28,lat:77});
     const [getEmail,setEmail]=useState('');
     const getValue=(e)=>{
         const {name,value}=e.target
@@ -17,43 +13,32 @@ function App() {
         }))
         console.log(getLoc)
     }
+    const [viewport, setViewport] = useState({
+        width: '100vw',
+        height: '100vh',
+        latitude: 28.7041,
+        longitude: 77.1025,
+        zoom: 8
+      });
    
-    useEffect(() => {
-         const showLoc=(data)=>{
-        //console.log(data.coords.latitude);
-        let lat=data.coords.latitude
-        let long=data.coords.longitude
-        setLoc({lat:lat,long:long})
-    }
-        navigator.geolocation.watchPosition(
-            showLoc,error=>console.log(error),
-            {
-                enableHighAccuracy:true,
-                timeout:1000
-            }
-            
-        )
-    }, [])
 
+    const track=()=>{
+        const showLoc=(data)=>{
+            //console.log(data.coords.latitude);
+            let lat=data.coords.latitude
+            let long=data.coords.longitude
+            setLoc({lat:lat,long:long})
+        }
+            navigator.geolocation.watchPosition(
+                showLoc,error=>console.log(error),
+                {
+                    enableHighAccuracy:true,
+                    timeout:1000
+                }
+                
+            )
+    }
     
-    const MyMapComponent = withScriptjs(withGoogleMap((props) =>
-  <GoogleMap
-    defaultZoom={12}
-    defaultCenter={{ lat: getLoc.lat, lng: getLoc.long }}
-     
-  > {props.isMarkerShown && <Marker radius={Math.random} label='Current Position' icon={iconImage} position={{ lat: getLoc.lat, lng: getLoc.long }} />} 
-      
-    {
-       Data.crimeData.map((obj,ind)=>{
-          // console.log(obj.lat)
-           return(props.isMarkerShown && <Marker  position={{ lat: obj.lat, lng: obj.long }} />)
-  
-       })
-    }
-    </GoogleMap>
-))
-
-
     function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
             var R = 6371; // Radius of the earth in km
             var dLat = deg2rad(lat2-lat1);  // deg2rad below
@@ -100,7 +85,59 @@ function App() {
             <input name='long' value={getLoc.long} onChange={getValue}></input>
             <input name='lat' value={getLoc.lat} onChange={getValue}></input>
             <button onClick={search}>search</button>
-            <MyMapComponent
+            <button onClick={track}>track</button>
+            <ReactMapGL
+      {...viewport}
+      mapboxApiAccessToken='pk.eyJ1IjoibXJpZHVsc3RhciIsImEiOiJja3JudnBubXc0bDlyMnpwOHNrOXVzNXYwIn0.ryB1v11gBLBBtUTXOnaNmA'
+      onViewportChange={nextViewport => setViewport(nextViewport)}
+    >
+
+      <Marker latitude={getLoc.lat} longitude={getLoc.long}>
+        <div>You are here</div>
+      </Marker>
+      {
+          Data.crimeData.map((obj,ind)=>{
+            // console.log(obj.lat)
+             return(
+                <Marker latitude={obj.lat} longitude={obj.long}>
+               <div>pin</div>
+              </Marker>
+             )
+         })
+      }
+        </ReactMapGL>
+        </div>
+    )
+}
+
+export default App
+
+
+/*
+const MyMapComponent = withScriptjs(withGoogleMap((props) =>
+  <GoogleMap
+    defaultZoom={12}
+    defaultCenter={{ lat: getLoc.lat, lng: getLoc.long }}
+     
+  > 
+
+
+  
+  {props.isMarkerShown && <Marker title='loc' label='Current Position' icon={iconImage} position={{ lat: getLoc.lat, lng: getLoc.long }} />} 
+      
+    {
+       Data.crimeData.map((obj,ind)=>{
+          // console.log(obj.lat)
+           return(props.isMarkerShown && <Marker  position={{ lat: obj.lat, lng: obj.long }} />)
+  
+       })
+    }
+    </GoogleMap>
+))
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+<MyMapComponent
                 isMarkerShown
                 positions={getLoc}
                 googleMapURL="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places"
@@ -108,8 +145,5 @@ function App() {
                 containerElement={<div style={{ height: `400px` }} />}
                 mapElement={<div style={{ height: `100%` }} />}
 />
-        </div>
-    )
-}
 
-export default App
+ */
