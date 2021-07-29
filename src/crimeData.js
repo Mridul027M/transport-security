@@ -1,4 +1,4 @@
-export var crimeData = [
+ var crimeData = [
   {
     pin_code: 11,
     area: "Area1",
@@ -54,3 +54,6 @@ export var crimeData = [
     crime_meter: 0,
   },
 ];
+
+
+module.exports={crimeData}
