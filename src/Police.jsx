@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import * as Data from "./policeCredential";
 import * as locData from "./crimeData";
+import axios from "axios";
 function Police() {
-  console.log(Data);
+  //console.log(Data);
   const [getInput, setInput] = useState({ user: "", pass: "" });
   const getValue = (e) => {
     const { name, value } = e.target;
@@ -23,17 +24,17 @@ function Police() {
     } else setV(false);
   };
   const [crime, setCrime] = useState({ area: "", crime: "" });
-  const saveToJson = () => {
+  const saveToJson = async () => {
     var area = document.getElementById("ar").value;
     var crime = document.getElementById("cr").value;
     console.log(typeof Number(area));
-    locData.crimeData.map((obj, i) => {
-      //console.log(obj);
-      if (obj.pin_code === Number(area)) {
-        obj.types_of_crime.push(crime);
-        console.log(obj.types_of_crime);
-      }
-    });
+    await axios.post('http://localhost:8000/saveToDb',{area:area,crime:crime})
+    .then((res)=>{
+      console.log(res)
+    })
+    .catch((err)=>{
+      console.log(err)
+    })
   };
 
   return (
