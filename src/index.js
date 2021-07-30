@@ -1,11 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
+import Login from "./Login";
 import Police from "./Police";
 
 ReactDOM.render(
   <>
-    <App />
+  <Login/>
+   
   </>,
 
   document.getElementById("root")
