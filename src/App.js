@@ -136,7 +136,7 @@ function App() {
             // console.log(obj.lat)
              return(
                 <Marker latitude={obj.lat} longitude={obj.long}>
-               <div>pin</div>
+               <div>📌</div>
               </Marker>
              )
          })
