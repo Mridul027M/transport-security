@@ -130,7 +130,7 @@ app.post("/", async (req, res) => {
     secure: false,
     auth: {
       user: "dmega2301@gmail.com",
-      pass: "Bus@1234",
+      pass: "<your password>",
     },
   });
 
