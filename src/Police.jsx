@@ -4,6 +4,7 @@ import * as locData from "./crimeData";
 import axios from "axios";
 function Police() {
   //console.log(Data);
+  const [val,setVal]=useState(1);
   const [getInput, setInput] = useState({ user: "", pass: "" });
   const getValue = (e) => {
     const { name, value } = e.target;
@@ -28,7 +29,7 @@ function Police() {
     var area = document.getElementById("ar").value;
     var crime = document.getElementById("cr").value;
     console.log(typeof Number(area));
-    await axios.post('http://localhost:8000/saveToDb',{area:area,crime:crime})
+    await axios.post('http://localhost:8000/saveToDb',{area:area,crime:crime,mul:val})
     .then((res)=>{
       console.log(res)
     })
@@ -36,7 +37,20 @@ function Police() {
       console.log(err)
     })
   };
-
+  
+  const showMultiplier=()=>{
+    var crime = document.getElementById("cr").value;
+    console.log(crime);
+    switch(crime)
+    {
+      case 'Murder':setVal(9);break;
+      case 'Rape':setVal(9);break;
+      case 'Theft':setVal(7);break;
+      case 'Robbery':setVal(8);break;
+      case 'Terrorism':setVal(10);break;
+    }
+    console.log(val)
+  }
   return (
     <>
       <div>police</div>
@@ -66,7 +80,7 @@ function Police() {
                 );
               })}
             </select>
-            <select name="crime" id="cr">
+            <select name="crime" id="cr" onChange={showMultiplier}>
               <option name="Murder" value="Murder">
                 Murder
               </option>
@@ -83,6 +97,7 @@ function Police() {
                 Terrorism
               </option>
             </select>
+            <p>Crime Multiplier of the above crime: {val}</p>
             <button onClick={saveToJson}>Save to database</button>
           </div>
         )}
