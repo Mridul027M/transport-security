@@ -4,11 +4,18 @@ import * as Data from "./crimeData";
 import axios from "axios";
 import Police from "./Police";
 import ReactMapGL,{Marker} from 'react-map-gl'
-import nodemailer from "nodemailer";
+import RoomIcon from '@material-ui/icons/Room';
+import PersonPinIcon from '@material-ui/icons/PersonPin';
 
-function App() {
+
+function App(props) {
+  console.log(props)
+  const [getCrimeData,setCrimeData]=useState([])
+  const data=[]
+  const finalData=[]
+  const foundLocs=[]
   const [getLoc,setLoc]= useState({long:28,lat:77});
-  const [getEmail,setEmail]=useState('');
+  
   const getValue=(e)=>{
       const {name,value}=e.target
       setLoc(data=>({
@@ -18,20 +25,67 @@ function App() {
   }
   const [viewport, setViewport] = useState({
       width: '100vw',
-      height: '50vh',
+      height: '70vh',
       latitude: 28.7041,
       longitude: 77.1025,
       zoom: 8
     });
- 
+    
 
+
+    
+   useEffect( async () => {
+    await axios.get("http://localhost:8000/getCrimeData")
+    .then((res)=>{
+     
+      res.data.map((obj,ind)=>{
+        data.push(obj)
+        
+      })
+   })
+    Data.crimeData.map((obj, ind) => {
+      // console.log(obj)
+      if (
+        getDistanceFromLatLonInKm(getLoc.lat, getLoc.long, obj.lat, obj.long) <=
+        10
+      ) {
+        foundLocs.push({lat:obj.lat,long:obj.long})
+        console.log("found");
+      }
+      console.log(data)
+
+      foundLocs.map((obj,ind)=>{
+        data.map((obj2,ind2)=>{
+          
+              if(obj2.lat===obj.lat ){
+                finalData.push(obj2)
+              }
+        })
+      })
+      console.log(finalData)
+      if(foundLocs.length!=0)
+      {
+        axios.post("http://localhost:8000/",{email:props.email,data:{finalData}})
+        .then((res)=>{
+          console.log(res)
+        })
+      }
+    });
+     
+
+    
+   }, [getLoc])
+   console.log(data)
+   console.log(foundLocs)
   const track=()=>{
+
+
       const showLoc=(data)=>{
           //console.log(data.coords.latitude);
           let lat=data.coords.latitude
           let long=data.coords.longitude
           setLoc({lat:lat,long:long})
-      }
+          }
           navigator.geolocation.watchPosition(
               showLoc,error=>console.log(error),
               {
@@ -59,91 +113,54 @@ function App() {
    function deg2rad(deg) {
           return deg * (Math.PI/180)
         }
-  //mail
-  //   let transporter = nodemailer.createTransport({
-  //     service: "gmail",
-  //     host: "smtp.gmail.com",
-  //     port: 587,
-  //     secure: false,
-  //     auth: {
-  //       user: "abhishek.raut1372@gmail.com",
-  //       pass: "70502",
-  //     },
-  //   });
-
-  //   let mailOptions = {
-  //     from: "abhishek.raut1372@gmail.com",
-  //     to: "abhishekjjp23012000@gmail.com",
-
-  //     subject: "Some Subject",
-  //     text: "hello",
-  //     //   html: htmlEmail
-  //   };
-
-  //   transporter.sendMail(mailOptions, (err, data) => {
-  //     if (err) {
-  //       console.log("error is ", err);
-  //     } else {
-  //       console.log("data is", data);
-  //     }
-  //   });
-  const mail = async () => {
-    await axios
-      .post("http://localhost:8000/", {
-        email: "abhishekjjp23012000@gmail.com",
-      })
-      .then((res) => {
-        console.log(res);
-      });
-  };
- 
-  const search = () => {
-    //console.log(Data)
-    //areas that come under 5KM radius of current geolocation of the traveller
-    Data.crimeData.map((obj, ind) => {
-      // console.log(obj)
-      if (
-        getDistanceFromLatLonInKm(getLoc.lat, getLoc.long, obj.lat, obj.long) <=
-        10
-      ) {
-        console.log("found");
-      }
-    });
-  };
+  
 
     return (
+      <>
+      <div>hello {props.email}</div>     
         <div>
-            <div>
-                provide an email to contact
-                <input placeholder='user;s email' name='contact' value={getEmail} onChange={(e)=>{setEmail(e.target.value);console.log(getEmail)}}></input>
-            </div>
-            hello
+           
+            
             <input name='long' value={getLoc.long} onChange={getValue}></input>
             <input name='lat' value={getLoc.lat} onChange={getValue}></input>
-            <button onClick={search}>search</button>
+           
             <button onClick={track}>track</button>
             <ReactMapGL
       {...viewport}
       mapboxApiAccessToken='pk.eyJ1IjoibXJpZHVsc3RhciIsImEiOiJja3JudnBubXc0bDlyMnpwOHNrOXVzNXYwIn0.ryB1v11gBLBBtUTXOnaNmA'
+      mapStyle="mapbox://styles/mapbox/satellite-v8"
       onViewportChange={nextViewport => setViewport(nextViewport)}
     >
 
       <Marker latitude={getLoc.lat} longitude={getLoc.long}>
-        <div>You are here</div>
+        <div><PersonPinIcon style={{color:"blue",fontSize:40}}/></div>
       </Marker>
       {
           Data.crimeData.map((obj,ind)=>{
             // console.log(obj.lat)
              return(
                 <Marker latitude={obj.lat} longitude={obj.long}>
-               <div>📌</div>
+               <div><RoomIcon style={{color:"red",fontSize:40}}/></div>
               </Marker>
              )
          })
       }
         </ReactMapGL>
       <Police/>
+      <div>
+        {foundLocs.map((obj,i)=>{
+          return(
+            <div>
+              <p>
+                {obj.lat}
+              </p>
+
+            </div>
+          )
+        })}
+      </div>
         </div>
+        </>
     )
 }
 
@@ -151,6 +168,9 @@ export default App
 
 
 /*
+
+
+
 const MyMapComponent = withScriptjs(withGoogleMap((props) =>
   <GoogleMap
     defaultZoom={12}

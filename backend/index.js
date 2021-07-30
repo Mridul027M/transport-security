@@ -11,7 +11,7 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(bodyParser.json())
-
+let crimeMeter=1;
 const crimeDataSchema=new mongoose.Schema({
      pin_code: Number,
     area: String,
@@ -31,6 +31,13 @@ const crimeDataSchema=new mongoose.Schema({
 })
 
 const crimeData = mongoose.model('crimeData', crimeDataSchema);
+
+app.get("/getCrimeData",(req,res)=>{
+  crimeData.find({},(err,obj)=>{
+    res.send(obj)
+  })
+})
+
 
 app.post('/saveToDb',(req,res)=>{
   console.log(req.body)
@@ -73,13 +80,13 @@ app.post('/saveToDb',(req,res)=>{
    
    )
 
-   var crimeMeter=0;
+   
    crimeData.findOne({ pin_code:Number(req.body.area)},(err,obj)=>{
      obj.types_of_crime.map((o,i)=>{
        console.log(o)
       switch(o.crime)
       {
-        case 'Murder':crimeMeter+=o.count*9;break;
+        case 'Murder':crimeMeter+=o.count*9;console.log("murder");break;
         case 'Rape':crimeMeter+=o.count*9;break;
         case 'Theft':crimeMeter+=o.count*7;break;
         case 'Robbery':crimeMeter+=o.count*8;break;
@@ -89,10 +96,13 @@ app.post('/saveToDb',(req,res)=>{
      crimeMeter=crimeMeter/obj.no_of_crimes_per_month
    })
    console.log(crimeMeter)
-   
+    crimeData.updateOne({pin_code:req.body.area},{"$set":{crime_meter:crimeMeter}},(err,obj)=>{
+      console.log(obj)
+    })
   
   
-                      })
+                     
+  })
 
 
 app.get('/',(req,res)=>{
@@ -100,7 +110,19 @@ app.get('/',(req,res)=>{
       res.send(obj)
     })
 })
-app.post("/", (req, res) => {
+app.post("/", async (req, res) => {
+  let html=` `
+    req.body.data.finalData.map((obj,ind)=>{
+      var crimeArray=` `
+             obj.types_of_crime.map((o,i)=>{
+                    crimeArray+=`<div ><span style="margin-right:25px">crime:${o.crime}</span><span>count:${o.count}</span></div><div></div>`
+             })
+            let v=`<div style="background-color:aqua">pin-code:${obj.pin_code}</div> <div style="background-color:red">crime meter:${obj.crime_meter}</div> <div style="background-color:yellow">no of crimes:${obj.no_of_crimes_per_month}</div> <div style="background-color:orange">types of crimes and resp. count:${crimeArray}</div><br>`
+            console.log(v)
+            html+=v;
+    })
+   console.log(html)
+ 
   let transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -114,11 +136,11 @@ app.post("/", (req, res) => {
 
   let mailOptions = {
     from: "dmega2301@gmail.com",
-    to: "abhishekjjp23012000@gmail.com",
+    to: req.body.email,
 
-    subject: "Some Subject",
-    text: "hello",
-    //   html: htmlEmail
+    subject: "Stay Alert!!!!",
+    text: 'Nearby dangerous areas-->',
+      html: html
   };
 
   transporter.sendMail(mailOptions, (err, email) => {
@@ -134,6 +156,7 @@ app.post("/", (req, res) => {
       });
     }
   });
+  res.send("done")
 });
 
 app.listen(port, (err) => {
